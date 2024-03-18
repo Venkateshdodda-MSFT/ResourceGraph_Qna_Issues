@@ -1,3 +1,5 @@
+Below is the query to list VM name, hardware size and attached data disk names with their sizes.
+
 resources
 | where type =~ 'microsoft.compute/disks' and properties !contains "osType" and isnotempty(managedBy)
 | project DiskName = name, datadisksresourceId = id, managedBy, dSize = properties.diskSizeGB
