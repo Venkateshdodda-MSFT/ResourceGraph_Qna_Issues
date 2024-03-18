@@ -1,0 +1,14 @@
+resources
+| where type =~ 'microsoft.compute/disks' and properties !contains "osType" and isnotempty(managedBy)
+| project DiskName = name, datadisksresourceId = id, managedBy, dSize = properties.diskSizeGB
+| extend VmName = tostring(split(managedBy, '/virtualMachines/')[1])
+| project DiskName, datadisksresourceId, VmName, dSize
+| summarize DiskName = make_set(DiskName), datadisksresourceId = make_set(datadisksresourceId), dSize = make_set(dSize) by VmName
+| join (
+    resources
+    | where type =~ 'microsoft.compute/virtualMachines'
+    | project name, id, VmSize = properties.hardwareProfile.vmSize
+    | extend VmName = tostring(name)
+    | project VmName, VmSize
+) on VmName
+| project VMname = VmName, VmSize, DiskName, DiskSize=dSize
